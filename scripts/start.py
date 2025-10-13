@@ -1,4 +1,3 @@
-
 import argparse
 import os
 import subprocess
@@ -10,19 +9,24 @@ RED = '\033[0;31m'
 GREEN = '\033[0;32m'
 YELLOW = '\033[1;33m'
 BLUE = '\033[0;34m'
-NC = '\033[0m' # No Color
+NC = '\033[0m'  # No Color
+
 
 def print_status(message):
     print(f"{BLUE}[INFO]{NC} {message}")
 
+
 def print_success(message):
     print(f"{GREEN}[SUCCESS]{NC} {message}")
+
 
 def print_warning(message):
     print(f"{YELLOW}[WARNING]{NC} {message}")
 
+
 def print_error(message):
     print(f"{RED}[ERROR]{NC} {message}")
+
 
 def run_command(command, cwd=None, background=False):
     if background:
@@ -31,14 +35,14 @@ def run_command(command, cwd=None, background=False):
         subprocess.run(command, shell=True, check=True, cwd=cwd)
         return None
 
+
 def start_backend(mode):
     print_status("Starting backend API server...")
-    backend_dir = os.path.join(os.getcwd(), "backend")
-    if mode == "production":
-        cmd = "uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4"
-    else:
-        cmd = "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    backend_dir = os.getcwd()  # Project root
+    # Use same command that works manually
+    cmd = "py -m backend.app.main"
     return run_command(cmd, cwd=backend_dir, background=True)
+
 
 def start_react_frontend(mode):
     print_status("Starting React frontend...")
@@ -50,18 +54,22 @@ def start_react_frontend(mode):
         cmd = "npm run dev -- --host 0.0.0.0 --port 3000"
     return run_command(cmd, cwd=frontend_dir, background=True)
 
+
 def start_streamlit_frontend():
     print_status("Starting Streamlit frontend...")
     frontend_dir = os.path.join(os.getcwd(), "frontend")
     cmd = "streamlit run app.py --server.port 8501 --server.address 0.0.0.0"
     return run_command(cmd, cwd=frontend_dir, background=True)
 
+
 def main():
-    os.chdir(os.path.dirname(os.path.abspath(__file__)) + "/..") # Ensure we are in the project root
+    os.chdir(os.path.dirname(os.path.abspath(__file__)) + "/..")  # Ensure we are in the project root
 
     parser = argparse.ArgumentParser(description="Start the Stock Research Chatbot application.")
-    parser.add_argument("--mode", type=str, default="development", choices=["development", "production"], help="Set mode (development|production) [default: development]")
-    parser.add_argument("--frontend", type=str, default="react", choices=["react", "streamlit", "both"], help="Set frontend (react|streamlit|both) [default: react]")
+    parser.add_argument("--mode", type=str, default="development", choices=["development", "production"],
+                        help="Set mode (development|production) [default: development]")
+    parser.add_argument("--frontend", type=str, default="react", choices=["react", "streamlit", "both"],
+                        help="Set frontend (react|streamlit|both) [default: react]")
     parser.add_argument("--install-deps", action="store_true", help="Install dependencies before starting")
     args = parser.parse_args()
 
@@ -85,7 +93,7 @@ def main():
     if args.install_deps:
         print_status("Installing Python dependencies...")
         run_command("pip install -r backend/requirements.txt")
-        
+
         if args.frontend == "react" or args.frontend == "both":
             print_status("Installing Node.js dependencies...")
             run_command("npm install --legacy-peer-deps", cwd="frontend/stock-research-ui")
@@ -95,19 +103,17 @@ def main():
     if args.mode == "development":
         if args.frontend == "react" or args.frontend == "both":
             processes.append(start_backend(args.mode))
-            time.sleep(3) # Give backend a moment to start
+            time.sleep(3)  # Give backend time to start
             processes.append(start_react_frontend(args.mode))
         elif args.frontend == "streamlit":
             processes.append(start_backend(args.mode))
-            time.sleep(3) # Give backend a moment to start
+            time.sleep(3)
             processes.append(start_streamlit_frontend())
-        
+
         if args.frontend == "both":
             processes.append(start_streamlit_frontend())
 
     elif args.mode == "production":
-        # In production, we assume frontends are built/served separately or by the backend
-        # For this script, we'll just start the backend in production mode
         processes.append(start_backend(args.mode))
 
     print_success("All services started!")
@@ -132,6 +138,6 @@ def main():
                 p.wait()
         print_success("Services shut down.")
 
+
 if __name__ == "__main__":
     main()
-
