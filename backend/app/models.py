@@ -57,6 +57,18 @@ class TickerInsight(BaseModel):
     ticker: str = Field(..., description="Stock ticker symbol")
     company_name: Optional[str] = Field(None, description="Company name")
     
+    # Price and market data
+    current_price: Optional[float] = Field(None, description="Current stock price")
+    market_cap: Optional[float] = Field(None, description="Market capitalization")
+    pe_ratio: Optional[float] = Field(None, description="P/E ratio")
+    fifty_two_week_high: Optional[float] = Field(None, description="52-week high")
+    fifty_two_week_low: Optional[float] = Field(None, description="52-week low")
+    
+    # Technical analysis
+    support_levels: List[float] = Field(default_factory=list, description="Support price levels")
+    resistance_levels: List[float] = Field(default_factory=list, description="Resistance price levels")
+    trend: Optional[str] = Field(None, description="Current price trend")
+    
     # Analysis results
     summary: str = Field(..., description="Executive summary of findings")
     key_drivers: List[str] = Field(default_factory=list, description="Key growth drivers")

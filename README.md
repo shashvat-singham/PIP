@@ -1,163 +1,298 @@
-# Stock Research Agentic Chatbot
+# Stock Research Platform
 
-This project is an AI-powered, multi-agent chatbot designed for comprehensive stock research and analysis. It takes natural language queries about multiple stock tickers, spawns parallel research agents to gather information from various sources, and synthesizes the findings into actionable insights and investment recommendations.
+A professional AI-powered stock research platform that provides comprehensive analysis, real-time market data, and intelligent insights for informed investment decisions.
+
+## 🚀 Quick Start
+
+### Windows
+
+```cmd
+# 1. Install dependencies
+py scripts/setup.py
+
+# 2. Edit .env and add your GEMINI_API_KEY
+
+# 3. Start the application
+py scripts/start.py
+```
+
+### Linux/macOS
+
+```bash
+# 1. Install dependencies
+python3 scripts/setup.py
+
+# 2. Edit .env and add your GEMINI_API_KEY
+
+# 3. Start the application
+python3 scripts/start.py
+```
+
+### Alternative (Using Convenience Scripts)
+
+**Windows:**
+```cmd
+setup.bat
+REM Edit .env file
+start.bat
+```
+
+**Linux/macOS:**
+```bash
+./setup.sh
+# Edit .env file
+./start.sh
+```
 
 ## ✨ Features
 
-- **Multi-Agent Architecture**: Utilizes a team of specialized agents (News, Filings, Earnings, etc.) for in-depth research.
-- **Parallel Processing**: Spawns parallel research agents per ticker for efficient and fast analysis.
-- **Real-time Web Research**: Gathers up-to-the-minute information from web sources, financial data APIs, and SEC filings.
-- **Grounded Insights**: All claims and insights are backed by citations with source URLs and publication dates.
-- **Investment Recommendations**: Provides a clear investment stance (Buy, Hold, Sell) with a confidence level and detailed rationale.
-- **Dual Frontend Options**: Comes with both a modern React-based UI and a functional Streamlit UI.
-- **Containerized Deployment**: Packaged with Docker for easy, one-command setup and deployment.
-- **Comprehensive Testing**: Includes a full suite of unit and integration tests to ensure reliability.
+- **Real-Time Stock Data**: Genuine market data from Yahoo Finance API
+- **AI-Powered Analysis**: Multi-agent system using Google Gemini 2.5 Flash
+- **Technical Analysis**: Support/resistance levels, moving averages, and trend analysis
+- **News Aggregation**: Latest news and market sentiment for any stock
+- **Interactive Dashboard**: Modern React-based UI with real-time updates
+- **RESTful API**: FastAPI backend with comprehensive endpoints
+- **Parallel Processing**: Efficient multi-ticker analysis with parallel agents
+- **Grounded Insights**: All claims backed by citations with source URLs
 
-## 🏛️ System Architecture
+## 📋 Prerequisites
 
-The application is built with a modern, scalable architecture:
+- **Python 3.11+** - [Download](https://www.python.org/downloads/)
+- **Node.js 18+** - [Download](https://nodejs.org/)
+- **Google Gemini API Key** - [Get API Key](https://ai.google.dev/)
 
-- **Backend**: FastAPI (Python) provides a robust API for handling analysis requests.
-- **Agent Framework**: LangGraph is used to orchestrate the complex, multi-agent workflows.
-- **Language Model**: Google's Gemini 2.5 Flash powers the natural language understanding and generation.
-- **Frontend**: 
-    - **React**: A rich, interactive user interface built with React, Tailwind CSS, and shadcn/ui.
-    - **Streamlit**: A simple, data-centric user interface for quick analysis and prototyping.
-- **Data Sources**: Integrates with real-time financial data APIs and SEC EDGAR for comprehensive data gathering.
-- **Containerization**: Docker and Docker Compose are used for packaging and running the application.
+## 📦 Installation
 
-For a more detailed overview of the architecture, please see the [Architecture Document](docs/ARCHITECTURE.md).
+### Step 1: Install Dependencies
 
-## 🚀 Getting Started
+**Windows:**
+```cmd
+cd backend
+py scripts\setup.py
+```
 
-### Prerequisites
+**Linux/macOS:**
+```bash
+cd backend
+python3 scripts/setup.py
+```
 
-- Python 3.11+
-- Node.js and npm (for React frontend development)
-- A Gemini API key
-- (Optional) Docker and Docker Compose for containerized deployment
+This will:
+- ✅ Check Python and Node.js versions
+- ✅ Install all backend dependencies
+- ✅ Install all frontend dependencies
+- ✅ Create necessary directories
+- ✅ Create `.env` file from template
 
-### Quickstart with Docker (Optional)
+### Step 2: Configure API Key
 
-If you prefer to run the application using Docker, follow these steps:
+Edit the `.env` file in the root directory and add your Gemini API key:
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository_url>
-    cd stock-research-chatbot
-    ```
+```env
+GEMINI_API_KEY=your_actual_gemini_api_key_here
+```
 
-2.  **Set up your environment:**
-    - Copy the `.env.template` file to `.env`:
-      ```bash
-      cp .env.template .env
-      ```
-    - Edit the `.env` file and add your Gemini API key:
-      ```
-      GEMINI_API_KEY=your_gemini_api_key_here
-      ```
+### Step 3: Start the Application
 
-3.  **Build and run with Docker Compose:**
-    ```bash
-    ./scripts/deploy.sh
-    ```
+**Windows:**
+```cmd
+cd backend
+py scripts\start.py
+```
 
-4.  **Access the application:**
-    - **Backend API**: `http://localhost:8000`
-    - **API Docs**: `http://localhost:8000/docs`
-    - **Streamlit UI**: `http://localhost:8501`
-    - **React UI**: The React UI is not started by default with `deploy.sh`. To run it, see the development setup below.
+**Linux/macOS:**
+```bash
+cd backend
+python3 scripts/start.py
+```
 
-### Development Setup (Recommended for VSCode Terminal)
+The application will start both backend and frontend servers:
+- **Backend API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+- **Frontend UI**: http://localhost:3000
 
-For more detailed instructions on setting up a local development environment, please see the [Getting Started Guide](docs/GETTING_STARTED.md).
+## 🎯 Usage
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository_url>
-    cd stock-research-chatbot
-    ```
+1. Open http://localhost:3000 in your browser
+2. Enter a stock ticker (e.g., AAPL, MSFT, GOOGL)
+3. Select analysis period (1 day, 1 week, 1 month, etc.)
+4. Click "Analyze"
+5. View comprehensive results including:
+   - Current price and P/E ratio
+   - Technical analysis with support/resistance levels
+   - Latest news and sentiment
+   - Investment recommendation with confidence level
 
-2.  **Run the setup script:**
-    This script will check prerequisites, create a Python virtual environment, install dependencies, and create necessary directories.
-    ```bash
-    python scripts/setup.py
-    ```
+## 🏛️ Architecture
 
-3.  **Activate the virtual environment:**
-    - On Linux/macOS:
-      ```bash
-      source venv/bin/activate
-      ```
-    - On Windows (Command Prompt):
-      ```cmd
-      .\venv\Scripts\activate.bat
-      ```
-    - On Windows (PowerShell):
-      ```powershell
-      .\venv\Scripts\Activate.ps1
-      ```
+The application uses a **multi-agent architecture** with specialized agents:
 
-4.  **Set up your environment variables:**
-    - Copy the `.env.template` file to `.env` if `setup.py` didn't create it:
-      ```bash
-      cp .env.template .env
-      ```
-    - Edit the `.env` file and add your Gemini API key:
-      ```
-      GEMINI_API_KEY=your_gemini_api_key_here
-      ```
+- **Yahoo Finance Orchestrator**: Coordinates data fetching and analysis
+- **Stock Data Tool**: Fetches real-time prices and P/E ratios from Yahoo Finance
+- **Technical Analysis Agent**: Calculates indicators and identifies trends
+- **News Aggregator**: Collects and summarizes market news
+- **SEC Edgar Tool**: Retrieves company filings and regulatory documents
 
-5.  **Start the application:**
-    - To start the backend and React frontend:
-      ```bash
-      python scripts/start.py --frontend react
-      ```
-    - To start the backend and Streamlit frontend:
-      ```bash
-      python scripts/start.py --frontend streamlit
-      ```
-    - To start both frontends:
-      ```bash
-      python scripts/start.py --frontend both
-      ```
-    - To install dependencies during startup (if not already done by `setup.py` or if you want to force reinstall):
-      ```bash
-      python scripts/start.py --frontend react --install-deps
-      ```
+For detailed architecture information, see [ARCHITECTURE_DESIGN.md](ARCHITECTURE_DESIGN.md).
 
-## 📖 Usage
+## 🚀 Technology Stack
 
-1.  **Open the web interface** (React or Streamlit).
-2.  **Enter a query** in the text area. Your query should include one or more stock tickers and a description of what you want to analyze.
-    - *Example*: `Analyze NVDA, AMD, and TSM for their exposure to AI datacenter demand. What is the short-term outlook (3-6 months)?`
-3.  **Click the "Analyze" button** to start the research process.
-4.  **View the results**: The application will display a detailed breakdown of the analysis for each ticker, including a summary, key drivers, risks, catalysts, and the final investment recommendation.
+### Backend
+- **Framework**: FastAPI (Python 3.11)
+- **AI/ML**: Google Gemini 2.5 Flash
+- **Agent Framework**: LangGraph
+- **Vector DB**: ChromaDB
+- **Data Sources**: Yahoo Finance API, Web Scraping, SEC EDGAR
+- **Logging**: Structlog
+- **Testing**: Pytest
+
+### Frontend
+- **Framework**: React 18
+- **Styling**: Tailwind CSS
+- **State Management**: React Hooks
+- **HTTP Client**: Axios
+
+## 🐳 Docker Deployment
+
+```bash
+# 1. Configure .env file
+cp .env.template .env
+# Edit .env and add your GEMINI_API_KEY
+
+# 2. Build and run
+docker-compose up --build
+```
+
+Services:
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+## 📖 API Documentation
+
+Interactive API documentation is available at:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+
+### Example API Request
+
+```bash
+curl -X POST "http://localhost:8000/api/analyze" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ticker": "AAPL",
+    "analysis_type": "comprehensive",
+    "time_period": "1mo"
+  }'
+```
 
 ## 🧪 Testing
 
-The project includes a comprehensive test suite to ensure code quality and reliability. To run the tests:
+```bash
+cd backend
+pytest
+```
 
-1.  Make sure you have set up the development environment and installed all dependencies.
-2.  Activate your virtual environment.
-3.  Run the tests using pytest:
-    ```bash
-    pytest
-    ```
+Run with coverage:
+```bash
+pytest --cov=backend --cov-report=html
+```
+
+## ✅ Data Accuracy
+
+All stock data is **genuine and real-time**, sourced directly from Yahoo Finance:
+
+- ✅ Current prices match Yahoo Finance exactly
+- ✅ P/E ratios scraped from official source
+- ✅ No dummy or fallback data
+- ✅ Real-time updates
+- ✅ Works for any valid ticker symbol
+
+## 📁 Project Structure
+
+```
+stock-research-platform/
+├── backend/
+│   ├── agents/              # AI agents for analysis
+│   ├── app/                 # FastAPI application
+│   ├── tools/               # Data fetching tools
+│   ├── utils/               # Utility modules
+│   ├── services/            # Gemini AI service
+│   ├── tests/               # Test suite
+│   ├── scripts/             # Setup and start scripts
+│   │   ├── setup.py         # Dependency installation
+│   │   └── start.py         # Application startup
+│   └── requirements.txt     # Python dependencies
+├── frontend/
+│   └── stock-research-ui/   # React application
+├── setup.bat                # Windows setup script
+├── start.bat                # Windows start script
+├── setup.sh                 # Linux/macOS setup script
+├── start.sh                 # Linux/macOS start script
+├── .env.template            # Environment template
+├── docker-compose.yml       # Docker configuration
+├── README.md                # This file
+├── ARCHITECTURE_DESIGN.md   # Architecture details
+└── SETUP_GUIDE.md           # Detailed setup guide
+```
+
+## 🔧 Command Line Options
+
+### Setup Script
+
+```bash
+# Force reinstall all dependencies
+python scripts/setup.py --force
+
+# Install only backend dependencies
+python scripts/setup.py --backend-only
+
+# Install only frontend dependencies
+python scripts/setup.py --frontend-only
+```
+
+### Start Script
+
+```bash
+# Start only backend
+python scripts/start.py --backend-only
+
+# Start only frontend
+python scripts/start.py --frontend-only
+
+# Use custom ports
+python scripts/start.py --backend-port 8001 --frontend-port 3001
+```
 
 ## 🔒 Security
 
-Please review the [Security Policy](SECURITY.md) for information on security-related matters.
+- ✅ API keys stored in `.env` (not in code)
+- ✅ `.gitignore` configured to exclude sensitive files
+- ✅ CORS properly configured
+- ✅ Input validation on all endpoints
+- ✅ No file uploads allowed
+- ✅ Rate limiting implemented
 
-## 📜 Changelog
+## 📞 Support
 
-For a detailed list of changes, please see the [Changelog](CHANGELOG.md).
+For issues and questions:
+- Check [SETUP_GUIDE.md](SETUP_GUIDE.md) for detailed setup instructions
+- Review [ARCHITECTURE_DESIGN.md](ARCHITECTURE_DESIGN.md) for technical details
+- Check logs in `logs/` directory
+- Visit API docs at http://localhost:8000/docs
 
-## 🤝 Contributing
+## 🙏 Acknowledgments
 
-Contributions are welcome! Please feel free to submit a pull request or open an issue.
+- **Yahoo Finance** for market data
+- **Google Gemini** for AI capabilities
+- **FastAPI** and **React** communities
+- **SEC EDGAR** for regulatory filings
 
 ## 📄 License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the MIT License.
+
+---
+
+**🚀 Ready to analyze stocks with AI!**
 

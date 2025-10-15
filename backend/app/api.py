@@ -18,7 +18,7 @@ from backend.app.models import (
     StanceType,
     ConfidenceLevel
 )
-from backend.agents.simple_orchestrator import SimpleResearchOrchestrator
+from backend.agents.yahoo_finance_orchestrator import YahooFinanceOrchestrator
 from backend.config.settings import get_settings
 
 logger = structlog.get_logger()
@@ -44,14 +44,14 @@ async def analyze_stocks(request: AnalysisRequest) -> AnalysisResponse:
                 query=request.query)
     
     try:
-        # Initialize the research orchestrator
-        orchestrator = SimpleResearchOrchestrator()
+        # Initialize the Yahoo Finance orchestrator
+        orchestrator = YahooFinanceOrchestrator()
         
         # Update status
         analysis_status_store[request_id] = {
             "status": "processing",
             "progress": 0.0,
-            "current_step": "Initializing analysis",
+            "current_step": "Initializing analysis with Yahoo Finance",
             "started_at": started_at
         }
         
@@ -59,7 +59,7 @@ async def analyze_stocks(request: AnalysisRequest) -> AnalysisResponse:
         insights = await orchestrator.analyze(
             query=request.query,
             max_iterations=request.max_iterations or 3,
-            timeout_seconds=request.timeout_seconds or 30,
+            timeout_seconds=request.timeout_seconds or 60,
             request_id=request_id
         )
         
@@ -202,33 +202,22 @@ async def list_available_agents() -> Dict[str, Any]:
         "agents": [
             {
                 "type": "news",
-                "description": "Searches for recent news articles and press releases",
-                "capabilities": ["web_search", "news_aggregation", "sentiment_analysis"]
-            },
-            {
-                "type": "filings",
-                "description": "Analyzes SEC filings and regulatory documents",
-                "capabilities": ["sec_edgar_access", "document_parsing", "financial_analysis"]
-            },
-            {
-                "type": "earnings",
-                "description": "Reviews earnings calls and transcripts",
-                "capabilities": ["transcript_analysis", "earnings_data", "guidance_extraction"]
-            },
-            {
-                "type": "insider",
-                "description": "Tracks insider trading and ownership changes",
-                "capabilities": ["insider_trading_data", "ownership_analysis", "institutional_holdings"]
-            },
-            {
-                "type": "patents",
-                "description": "Researches patents and academic papers",
-                "capabilities": ["patent_search", "academic_research", "innovation_tracking"]
+                "description": "Fetches and analyzes recent news from Yahoo Finance",
+                "capabilities": ["yahoo_finance_news", "news_summarization", "sentiment_analysis"]
             },
             {
                 "type": "price",
-                "description": "Analyzes price movements and technical factors",
-                "capabilities": ["price_analysis", "technical_indicators", "market_sentiment"]
+                "description": "Analyzes price movements and technical indicators from Yahoo Finance",
+                "capabilities": ["price_analysis", "technical_indicators", "support_resistance"]
+            },
+            {
+                "type": "synthesis",
+                "description": "Synthesizes all data using Gemini AI to generate investment recommendations",
+                "capabilities": ["ai_analysis", "investment_rationale", "risk_assessment"]
             }
+        ],
+        "data_sources": [
+            "Yahoo Finance (real-time stock data and news)",
+            "Google Gemini AI (intelligent analysis and synthesis)"
         ]
     }

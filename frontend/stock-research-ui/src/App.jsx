@@ -303,6 +303,75 @@ function App() {
                       
                       <TabsContent value="summary" className="mt-4">
                         <div className="space-y-4">
+                          {/* Price and Market Data */}
+                          {insight.current_price && (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                              <div>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">Current Price</p>
+                                <p className="text-lg font-bold">${insight.current_price.toFixed(2)}</p>
+                              </div>
+                              {insight.market_cap && (
+                                <div>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">Market Cap</p>
+                                  <p className="text-lg font-bold">
+                                    {insight.market_cap >= 1e12 
+                                      ? `$${(insight.market_cap / 1e12).toFixed(2)}T`
+                                      : insight.market_cap >= 1e9
+                                      ? `$${(insight.market_cap / 1e9).toFixed(2)}B`
+                                      : insight.market_cap >= 1e6
+                                      ? `$${(insight.market_cap / 1e6).toFixed(2)}M`
+                                      : `$${insight.market_cap.toFixed(2)}`
+                                    }
+                                  </p>
+                                </div>
+                              )}
+                              {insight.pe_ratio && (
+                                <div>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">P/E Ratio</p>
+                                  <p className="text-lg font-bold">{insight.pe_ratio.toFixed(2)}</p>
+                                </div>
+                              )}
+                              {insight.trend && (
+                                <div>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">Trend</p>
+                                  <p className="text-lg font-bold capitalize">{insight.trend}</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Technical Levels */}
+                          {(insight.support_levels?.length > 0 || insight.resistance_levels?.length > 0) && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                              {insight.support_levels?.length > 0 && (
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Support Levels</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {insight.support_levels.map((level, idx) => (
+                                      <Badge key={idx} variant="outline" className="bg-green-100 text-green-800">
+                                        ${level.toFixed(2)}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {insight.resistance_levels?.length > 0 && (
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Resistance Levels</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {insight.resistance_levels.map((level, idx) => (
+                                      <Badge key={idx} variant="outline" className="bg-red-100 text-red-800">
+                                        ${level.toFixed(2)}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          <Separator />
+                          
                           <div>
                             <h4 className="font-semibold mb-2">Executive Summary</h4>
                             <p className="text-gray-700 dark:text-gray-300">{insight.summary}</p>

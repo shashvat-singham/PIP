@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
     
     # API Configuration
-    gemini_api_key: str
+    gemini_api_key: Optional[str] = None
     app_env: str = "development"
     log_level: str = "INFO"
     secret_key: str = "default_secret_key"
@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8000
     
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding='utf-8', case_sensitive=False, extra='ignore')
 
 
 
