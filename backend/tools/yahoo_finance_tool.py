@@ -232,6 +232,13 @@ class YahooFinanceTool:
                     if not title or len(title) < 10:
                         continue
                     
+                    # Filter out irrelevant sections
+                    irrelevant_keywords = ['entertainment', 'sports', 'weather', 'lifestyle', 'celebrity', 'horoscope']
+                    if any(keyword in title.lower() for keyword in irrelevant_keywords):
+                        continue
+                    if any(keyword in href.lower() for keyword in irrelevant_keywords):
+                        continue
+                    
                     # Construct full URL
                     if href.startswith('/'):
                         full_url = f'https://finance.yahoo.com{href}'

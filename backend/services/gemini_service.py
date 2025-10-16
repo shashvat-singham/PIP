@@ -6,6 +6,9 @@ import json
 import os
 from typing import List, Dict, Any, Optional
 import structlog
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = structlog.get_logger()
 
@@ -20,12 +23,13 @@ class GeminiService:
         Args:
             api_key: Gemini API key (defaults to GEMINI_API_KEY env var)
         """
-        self.api_key = api_key or os.getenv('GEMINI_API_KEY')
+        self.api_key = api_key or os.getenv('GEMINI_API_KEY') 
+
         if not self.api_key:
             logger.warning("GEMINI_API_KEY not found, some features may not work")
         
         genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
     
     def summarize_news(self, ticker: str, news_articles: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
@@ -120,6 +124,34 @@ Respond with ONLY the JSON, no additional text."""
         Returns:
             Dictionary containing detailed investment analysis
         """
+        # Format financial metrics, only include what we have
+        pe_ratio = financial_metrics.get('pe_ratio', 0)
+        profit_margin = financial_metrics.get('profit_margin', 0)
+        revenue_growth = financial_metrics.get('revenue_growth')
+        market_cap = financial_metrics.get('market_cap', 0)
+        eps = financial_metrics.get('eps', 0)
+        
+        # Calculate price change
+        current_price = price_data.get('current_price', 0)
+        high_52w = price_data.get('high_52w', 0) or financial_metrics.get('fifty_two_week_high', 0)
+        low_52w = price_data.get('low_52w', 0) or financial_metrics.get('fifty_two_week_low', 0)
+        
+        if high_52w and low_52w and current_price:
+            price_change_pct = ((current_price - low_52w) / low_52w) * 100
+        else:
+            price_change_pct = 0
+        
+        # Format revenue growth display - handle None and 0 differently
+        if revenue_growth is None:
+            revenue_growth_display = "N/A (data not available)"
+            revenue_growth_value = 0  # For calculations
+        elif revenue_growth == 0:
+            revenue_growth_display = "0.00% (flat or data unavailable)"
+            revenue_growth_value = 0
+        else:
+            revenue_growth_display = f"{revenue_growth*100:.2f}%"
+            revenue_growth_value = revenue_growth
+        
         prompt = f"""You are a senior equity research analyst at Goldman Sachs. Provide a detailed investment analysis for {ticker} ({company_name}).
 
 CURRENT DATA:
@@ -133,18 +165,18 @@ Key Developments:
 {chr(10).join(['- ' + point for point in news_summary.get('key_points', [])])}
 
 Price Data:
-- Current Price: ${price_data.get('current_price', 0):.2f}
-- 52-Week High: ${price_data.get('high_52w', 0):.2f}
-- 52-Week Low: ${price_data.get('low_52w', 0):.2f}
+- Current Price: ${current_price:.2f}
+- 52-Week High: ${high_52w:.2f}
+- 52-Week Low: ${low_52w:.2f}
 - Trend: {price_data.get('trend', 'neutral')}
-- Price Change (Period): {price_data.get('price_change_pct', 0):.2f}%
+- Price Change from 52W Low: {price_change_pct:.2f}%
 
 Financial Metrics:
-- Revenue Growth: {financial_metrics.get('revenue_growth', 0)*100:.2f}%
-- Profit Margin: {financial_metrics.get('profit_margin', 0)*100:.2f}%
-- Forward P/E: {financial_metrics.get('forward_pe', 0):.2f}
-- ROE: {financial_metrics.get('roe', 0)*100:.2f}%
-- Debt/Equity: {financial_metrics.get('debt_to_equity', 0):.2f}
+- Market Cap: ${market_cap:,.0f}
+- P/E Ratio (TTM): {pe_ratio:.2f}x
+- EPS (TTM): ${eps:.2f}
+- Profit Margin: {profit_margin*100:.2f}%
+- Revenue Growth: {revenue_growth_display}
 
 INSTRUCTIONS:
 Provide a comprehensive investment analysis with:
@@ -229,8 +261,18 @@ Respond with ONLY the JSON, no additional text."""
             logger.error(f"Error generating investment analysis for {ticker}", error=str(e))
             # Enhanced fallback with more specific content
             trend = price_data.get('trend', 'neutral')
-            price_change = price_data.get('price_change_pct', 0)
+            current_price = price_data.get('current_price', 0)
+            high_52w = price_data.get('high_52w', 0) or financial_metrics.get('fifty_two_week_high', 0)
+            low_52w = price_data.get('low_52w', 0) or financial_metrics.get('fifty_two_week_low', 0)
+            
+            if high_52w and low_52w and current_price:
+                price_change = ((current_price - low_52w) / low_52w) * 100
+            else:
+                price_change = 0
+            
             sentiment = news_summary.get('sentiment', 'neutral')
+            pe_ratio = financial_metrics.get('pe_ratio', 0)
+            profit_margin = financial_metrics.get('profit_margin', 0)
             
             # Determine stance based on data
             if trend == 'bullish' and sentiment == 'positive' and price_change > 5:
@@ -243,21 +285,27 @@ Respond with ONLY the JSON, no additional text."""
                 stance = 'hold'
                 confidence = 'medium'
             
+            # Format revenue growth for fallback message
+            if revenue_growth is None or revenue_growth_value == 0:
+                revenue_growth_text = "with revenue growth data unavailable"
+            else:
+                revenue_growth_text = f"with {revenue_growth_value*100:.1f}% revenue growth"
+            
             return {
-                'rationale': f'{company_name} ({ticker}) demonstrates a {trend} technical trend with {sentiment} market sentiment. The stock has moved {abs(price_change):.1f}% over the analyzed period, trading at a forward P/E of {financial_metrics.get("forward_pe", 0):.1f}x. Based on current fundamentals including {financial_metrics.get("revenue_growth", 0)*100:.1f}% revenue growth and {financial_metrics.get("profit_margin", 0)*100:.1f}% profit margins, the company maintains a stable market position. The investment outlook suggests a {stance} recommendation with {confidence} confidence given the current market dynamics and company-specific factors.',
+                'rationale': f'{company_name} ({ticker}) demonstrates a {trend} technical trend with {sentiment} market sentiment. The stock has moved {abs(price_change):.1f}% from its 52-week low, trading at a P/E ratio of {pe_ratio:.1f}x. Based on current fundamentals including {profit_margin*100:.1f}% profit margins, the company maintains a stable market position. The investment outlook suggests a {stance} recommendation with {confidence} confidence given the current market dynamics and company-specific factors.',
                 'key_drivers': [
-                    f'Revenue growth trajectory of {financial_metrics.get("revenue_growth", 0)*100:.1f}% YoY indicating strong market demand',
-                    f'Profit margin expansion to {financial_metrics.get("profit_margin", 0)*100:.1f}% demonstrating operational efficiency',
-                    f'Return on equity of {financial_metrics.get("roe", 0)*100:.1f}% showing effective capital allocation',
+                    f'Profit margin of {profit_margin*100:.1f}% demonstrating strong operational efficiency',
+                    f'P/E ratio of {pe_ratio:.1f}x indicating market valuation relative to earnings',
                     'Strategic market positioning and competitive advantages in core business segments',
-                    'Innovation pipeline and product development initiatives driving future growth'
+                    'Innovation pipeline and product development initiatives driving future growth',
+                    'Brand strength and customer loyalty supporting pricing power'
                 ],
                 'risks': [
-                    f'Current valuation at {financial_metrics.get("forward_pe", 0):.1f}x forward P/E may limit near-term upside',
+                    f'Current P/E ratio of {pe_ratio:.1f}x may indicate valuation concerns',
                     'Macroeconomic headwinds including interest rate environment and inflation pressures',
                     'Competitive intensity in key markets potentially impacting market share',
-                    f'Debt-to-equity ratio of {financial_metrics.get("debt_to_equity", 0):.2f} requiring balance sheet management',
-                    'Regulatory environment changes that could affect business operations'
+                    'Regulatory environment changes that could affect business operations',
+                    'Limited revenue growth visibility requiring close monitoring of business trends'
                 ],
                 'catalysts': [
                     'Next quarterly earnings announcement expected to provide updated guidance',
@@ -268,7 +316,7 @@ Respond with ONLY the JSON, no additional text."""
                 ],
                 'stance': stance,
                 'confidence': confidence,
-                'confidence_rationale': f'Confidence level is {confidence} based on the {trend} price trend, {sentiment} news sentiment, and {abs(price_change):.1f}% price movement. The analysis incorporates available financial metrics showing {financial_metrics.get("revenue_growth", 0)*100:.1f}% revenue growth, though some uncertainty remains regarding near-term catalysts and market conditions.'
+                'confidence_rationale': f'Confidence level is {confidence} based on the {trend} price trend, {sentiment} news sentiment, and {abs(price_change):.1f}% price movement. The analysis incorporates available financial metrics {revenue_growth_text}, though some uncertainty remains regarding near-term catalysts and market conditions.'
             }
     
     def analyze_support_resistance(self, ticker: str, price_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -326,4 +374,3 @@ Respond with ONLY the JSON, no additional text."""
                 'resistance_levels': price_data.get('resistance_levels', [])[:3],
                 'technical_summary': f'{ticker} is currently trading at ${current_price:.2f} in a {trend} trend. The stock is positioned between key support levels at {", ".join([f"${x:.2f}" for x in price_data.get("support_levels", [])[:2]])} and resistance at {", ".join([f"${x:.2f}" for x in price_data.get("resistance_levels", [])[:2]])}. Technical indicators suggest monitoring these levels for potential breakout or breakdown signals.'
             }
-
